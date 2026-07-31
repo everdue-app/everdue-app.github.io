@@ -146,6 +146,9 @@
 </style>
 </head>
 <body>
+<script>/* Build stamp — MUST equal the CACHE name in sw.js. test_version.py enforces it. */
+const FS_BUILD = "ed-v5";
+</script>
 <style>
   #fsReg { --fs-bg:#eef1f4; --fs-card:#ffffff; --fs-text:#17262e; --fs-sub:#5b6b73; --fs-sub2:#7c8a91; --fs-faint:#9fb0b7; --fs-border:#dfe5e9; --fs-accent:#0f5e6b; --fs-accentD:#0b4954;
     position:fixed; inset:0; background:var(--fs-bg); color:var(--fs-text); z-index:80; overflow-y:auto; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
@@ -180,7 +183,7 @@
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap">
       <span class="edWm" style="font-size:24px;display:inline-flex;align-items:center;gap:9px"><img src="icon-192.png" style="width:34px;height:34px;border-radius:6px" alt=""> <span><span class="w1">Ever</span><span class="w2">Due</span></span></span>
       <!-- EverDue lineage reset (Reece, 29 Jul 2026): EverDue v0.01 beta == Arc Adapt Register v0.01 == FireSpark Register v1.32 / wsr-v46 feature state (fs V1.30), for future diffing -->
-      <span id="fsVerBadge" style="font-size:11px;color:#7c8a91">register V0.01 beta</span>
+      <span id="fsVerBadge" style="font-size:11px;color:#7c8a91">register V0.02 beta</span>
       <span id="fsCoBadge" style="display:none;font-size:12px;font-weight:600;color:#7c8a91;border:1px solid #d5dde1;border-radius:20px;padding:2px 10px"></span>
       <span style="flex:1"></span>
       <button class="fsbtn" id="fsFileBtn" title="Register file &mdash; load, company profile, export one client">&#128193; Register</button>
@@ -238,7 +241,7 @@
     <button class="btn" id="fsBack" title="Back to site">&#9664; Site</button>
     <button class="btn" id="fsTestBtn" title="Start or continue a Monthly / 6 Monthly / Annual / 5 Yearly test session" style="background:#1b8a3f;border-color:#2fae57;color:#fff;font-weight:700">&#9654; Start test</button>
     <button class="btn" id="fsBinBtn" title="Site recycle bin — replaced/deleted registered devices">&#128465; Bin</button>
-    <span class="title">EverDue <span style="color:#888;font-weight:400;font-size:11px">V0.01 beta</span></span>
+    <span class="title">EverDue <span style="color:#888;font-weight:400;font-size:11px">V0.02 beta</span></span>
     <span id="fsSiteName" style="font-size:12px;color:#8ab4ff;font-weight:600;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
     <button class="btn" id="btnPlans" title="Plans saved on this device">&#9776; Plans</button>
     <button class="btn" id="btnNew" title="Start a new plan">&#65291; New</button>
@@ -12828,7 +12831,10 @@ document.getElementById("fsSettingsBtn").onclick = () => {
   try { document.getElementById("fsSetName").value = localStorage.getItem("fs-user") || ""; } catch (e) {}
   try { document.getElementById("fsMapsApp").value = fsMapsApp(); } catch (e) {}
   const vb = document.getElementById("fsVerBadge");
-  document.getElementById("fsSetVer").textContent = vb ? vb.textContent : "";
+  /* Version AND build. The badge alone could not tell Reece whether a deploy had
+     actually reached his device — the whole point of this pass. */
+  document.getElementById("fsSetVer").textContent =
+    (vb ? vb.textContent : "") + " \u00b7 build " + FS_BUILD;
   document.getElementById("fsSettingsModal").classList.add("show");
 };
 document.getElementById("fsSetClose").onclick = () => document.getElementById("fsSettingsModal").classList.remove("show");
