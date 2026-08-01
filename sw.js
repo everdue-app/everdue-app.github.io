@@ -1,29 +1,31 @@
-const CACHE = "ed-v7";
-const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-512-maskable.png", "./favicon.png", "./pdf.min.js", "./pdf.worker.min.js", "./qr.js", "./jsqr.js", "./zxing.js"];
-self.addEventListener("install", e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
+/* everdue-app.github.io is retired — EverDue lives at
+   https://arcadapt.github.io/arcadapt-register/
+
+   This file replaces the V0.04 worker, which was cache-first for the document.
+   On its own, deleting or redirecting index.html would NOT reach a device that
+   had installed the old PWA: that device answers its own navigations from the
+   V0.04 cache and never asks the network. The browser does re-fetch sw.js
+   though, so this is the one file that can reliably retire the old app.
+
+   It caches nothing and, deliberately, registers NO fetch handler at all — a
+   worker without one does not intercept, so every request goes to the network
+   even in the moments before it finishes removing itself. */
+self.addEventListener("install", function () {
   self.skipWaiting();
 });
-self.addEventListener("activate", e => {
-  e.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
-      .then(() => self.clients.claim())
-  );
-});
-self.addEventListener("fetch", e => {
-  if (e.request.method !== "GET") return;
-  // NEVER intercept cross-origin calls (geocoding/routing APIs): ignoreSearch matching
-  // was serving the FIRST map lookup's cached answer for EVERY site (C7.1 fix)
-  if (new URL(e.request.url).origin !== location.origin) return;
-  e.respondWith(
-    caches.match(e.request, { ignoreSearch: true }).then(hit =>
-      hit ||
-      fetch(e.request).then(resp => {
-        const copy = resp.clone();
-        caches.open(CACHE).then(c => c.put(e.request, copy));
-        return resp;
-      }).catch(() => caches.match("./index.html"))
-    )
-  );
+
+self.addEventListener("activate", function (e) {
+  e.waitUntil((async function () {
+    try {
+      const keys = await caches.keys();               /* this origin's caches only */
+      await Promise.all(keys.map(k => caches.delete(k).catch(() => {})));
+    } catch (err) {}
+    try { await self.registration.unregister(); } catch (err) {}
+    try {
+      const cs = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      for (const c of cs) {
+        try { await c.navigate("https://arcadapt.github.io/arcadapt-register/"); } catch (err) {}
+      }
+    } catch (err) {}
+  })());
 });
